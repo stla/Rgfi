@@ -1,12 +1,16 @@
+#' Find the range of the slope
+#' 
+#' 
+#' @export
 
 findSupport <- function(poly, l, u){
 	sigma <- poly[1,]
 	VTsum <- poly[2,]
-  if((min(sigma) > 0) || (max(sigma)<0)){ # 1er cas : la cellule ne contient pas sigma=0 (tous les sigma de même signe)
+  if((min(sigma) > 0) || (max(sigma)<0)){ # 1er cas : la cellule ne contient pas sigma=0 (tous les sigma de m?me signe)
     return(range(-c((l-VTsum)/sigma, (u-VTsum)/sigma)))
-  }else{ # 2ème cas : l'axe des VTsum coupe la cellule 
+  }else{ # 2?me cas : l'axe des VTsum coupe la cellule 
     where <- c(isInside(poly, l), isInside(poly, u))
-    #cas 2a : un nouveau point (l ou u) à l'intérieur
+    #cas 2a : un nouveau point (l ou u) ? l'int?rieur
     if(where[1]=="inside" || where[2]=="inside"){ 
       return(c(m=-Inf, M=Inf))
     }
@@ -30,7 +34,7 @@ findSupport <- function(poly, l, u){
     if(where[1]=="below"){
       #
       neg <- which(sigma<0)
-      left <- max(c((VTsum[neg]-u)/sigma[neg])) # plutôt u!!
+      left <- max(c((VTsum[neg]-u)/sigma[neg])) # plut?t u!!
       pleft <- pcauchy(left)
       # 
       pos <- which(sigma>0)
