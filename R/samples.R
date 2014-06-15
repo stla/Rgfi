@@ -30,5 +30,5 @@ sample01 <- function(){
   
   #
   a <- 2
-  R3 <- c(alow=a, aupp=a+1,b=NA)
+  R3 <<- c(alow=a, aupp=a+1, b=0.5)
 }

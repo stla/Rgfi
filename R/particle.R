@@ -18,14 +18,18 @@ return(poly[,ord])
 #' 
 #' @export
 Dlow <- function(ribbon){
-  c(a=ribbon["alow"], b=ribbon["b"], typ=FALSE)
+  D <- c(ribbon["alow"], ribbon["b"], typ=FALSE)
+  names(D)[1:2] <- c("a","b")
+  return(D)
 }
 
 #' Extract upper line from a ribbon
 #' 
 #' @export
 Dupp <- function(ribbon){
-  c(a=ribbon["aupp"], b=ribbon["b"], typ=TRUE)
+  D <- c(a=ribbon["aupp"], b=ribbon["b"], typ=TRUE)
+  names(D)[1:2] <- c("a","b")
+  return(D)
 }
 
 #' Intersection of two lines
@@ -36,4 +40,17 @@ Dupp <- function(ribbon){
 intersect <- function(D1, D2){
   x = (D1[1]-D2[1])/(D2[2]-D1[2])
   return(c(x, D1[1] + D1[2]*x))
+}
+
+
+#' Edge to (intercept, slope)
+#' 
+#' @export
+edge2ab <- function(poly, i){
+  poly <- unname(poly)
+  A = poly[,i]
+  B = poly[,(i %% ncol(poly))+1]
+  slope = (B[2]-A[2])/(B[1]-A[1])
+  intercept = A[2] - slope*A[1]
+return(c(a=intercept, b=slope))
 }

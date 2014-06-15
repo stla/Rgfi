@@ -2,6 +2,7 @@
 
 export(Dlow)
 export(Dupp)
+export(edge2ab)
 export(findSupport)
 export(intersect)
 export(orderPart)
