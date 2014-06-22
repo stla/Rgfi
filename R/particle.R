@@ -54,3 +54,18 @@ edge2ab <- function(poly, i){
   intercept = A[2] - slope*A[1]
 return(c(a=intercept, b=slope))
 }
+
+#' Create a particle from two ribbons
+#' 
+#' @export
+ipart <- function(R1,R2){
+  D11 <- Dlow(R1)
+  D12 <- Dupp(R1)
+  D21 <- Dlow(R2)
+  D22 <- Dupp(R2)
+  A <- intersect(D11,D21)
+  B <- intersect(D11,D22)
+  C <- intersect(D12,D21)
+  D <- intersect(D12,D22)
+return(orderPart(cbind(A,B,C,D)))
+}

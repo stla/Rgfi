@@ -74,7 +74,9 @@ R3
 findSupport(part, R3["alow"], R3["aupp"]) # (-0.6, Inf) or (-Inf, -2.4375) 
 orderPart(part) 
 
-R3["b"] <- -5
+R3["b"] <- -0.6
+plotPart(part, xlim=c(-1,0.9), ylim=c(0,3.5), R=R3, lines=TRUE, xlab=NA, ylab=NA)
+R3["b"] <- -2.4375
 plotPart(part, xlim=c(-1,0.9), ylim=c(0,3.5), R=R3, lines=TRUE, xlab=NA, ylab=NA)
 
 
@@ -85,6 +87,6 @@ for(i in 1:nsims){
 }
 table(sims)
 table(sims)[1]/nsims
-pcauchy(-2)
+pcauchy(-2.4375)/(pcauchy(-2.4375)+(1-pcauchy(-0.6)))
 
 
