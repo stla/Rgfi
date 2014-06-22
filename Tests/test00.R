@@ -42,3 +42,10 @@ xlim <- c(0,2)
 ylim <- c(0,6.5)
 plotPart(part, xlim=xlim, ylim=ylim, R=R3, lines=TRUE)
 
+
+sample02() 
+findSupport(part, 2, 3) # (-2, Inf) or (Inf, -2)
+orderPart(part) 
+
+R3["b"] <- -2
+plotPart(part, xlim=c(-2,2), ylim=c(0,5), R=R3, lines=TRUE)

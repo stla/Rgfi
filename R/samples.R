@@ -32,3 +32,21 @@ sample01 <- function(){
   a <- 2
   R3 <<- c(alow=a, aupp=a+1, b=0.5)
 }
+
+#' Sample 2
+#' 
+#' @export
+sample02 <- function(){
+  R1 <<- c(alow=0.4, aupp=2.5, b=1.5)
+  D11 <- Dlow(R1)
+  D12 <- Dupp(R1)
+  R2 <<- c(alow=1, aupp=2, b=-2)
+  D21 <- Dlow(R2)
+  D22 <- Dupp(R2)
+  A <- intersect(D11,D21)
+  B <- intersect(D11,D22)
+  C <- intersect(D12,D21)
+  D <- intersect(D12,D22)
+  part <<- cbind(A,B,C,D)
+  R3 <<- c(alow=2, aupp=3, b=0.5)
+}
