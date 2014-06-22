@@ -6,10 +6,10 @@
 updatePoly1 <- function(opoly, D, toRemove){
   # first edge
   index = if(toRemove==1) ncol(opoly) else toRemove-1 
-  M = intersect(c(D["a"],D["b"]), getLine(opoly,index))
+  M = intersect(c(D["a"],D["b"]), edge2ab(opoly,index))
   # second edge
   index = if(toRemove==ncol(opoly)) 1 else toRemove+1 
-  N = intersect(c(D["a"],D["b"]), getLine(opoly,index))
+  N = intersect(c(D["a"],D["b"]), edge2ab(opoly,index))
   #
   opoly[,toRemove] = M
   opoly[,index] = N
@@ -32,9 +32,9 @@ updatePoly2 <- function(opoly, D, Dinters, test2){
   }
   opoly = opoly[, arrange]
   # M
-  M = intersect(c(D["a"],D["b"]), getLine(opoly,1))
+  M = intersect(c(D["a"],D["b"]), edge2ab(opoly,1))
   # N
-  N = intersect(c(D["a"],D["b"]), getLine(opoly,2))
+  N = intersect(c(D["a"],D["b"]), edge2ab(opoly,2))
   #
   test = test2[1]
   if( (!D["typ"] && test) || (D["typ"] && !test) ){
@@ -66,11 +66,12 @@ updatePoly  <- function(opoly, D){ #
     print("case 1\n")
     return(updatePoly1(opoly, D, toRemove[1]))
   } else if(length(toRemove) == 0){
-    Dinters = which(test.== 1)
+    Dinters = which(test == 1)
     if(length(Dinters) == 2){
       print("case 2\n")
       return(updatePoly2(opoly, D, Dinters, test2))
     } else{
+      print("nothing to do")
       return(opoly)
     }
   } else if(Remove[1] && Remove[2]){

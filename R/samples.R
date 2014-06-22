@@ -29,7 +29,7 @@ sample01 <- function(){
   B <- intersect(D11,D22)
   C <- intersect(D12,D21)
   D <- intersect(D12,D22)
-  part <<- cbind(A,B,C,D)
+  part <<- orderPart(cbind(A,B,C,D))
   
   #
   a <- 2
@@ -53,7 +53,7 @@ sample02 <- function(){
   B <- intersect(D11,D22)
   C <- intersect(D12,D21)
   D <- intersect(D12,D22)
-  part <<- cbind(A,B,C,D)
+  part <<- orderPart(cbind(A,B,C,D))
   R3 <<- c(alow=2, aupp=3, b=0.5)
 }
 
@@ -74,6 +74,6 @@ sample03 <- function(){
   B <- intersect(D11,D22)
   C <- intersect(D12,D21)
   D <- intersect(D12,D22)
-  part <<- cbind(A,B,C,D)
+  part <<- orderPart(cbind(A,B,C,D))
   R3 <<- c(alow=2.2, aupp=3, b=0.5)
 }
