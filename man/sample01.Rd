@@ -8,4 +8,7 @@ sample01()
 \description{
 Sample 1
 }
+\details{
+A simple situation for the range
+}
 

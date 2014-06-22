@@ -8,4 +8,7 @@ sample02()
 \description{
 Sample 2
 }
+\details{
+One new intercept is on one edge of the particle
+}
 
