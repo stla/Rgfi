@@ -63,14 +63,15 @@ ESS <- rep(NA,n)
 for(k in 3:n){
   Z1 <- FE[k,]
   
-  VTall_new <- array(NA, dim=c(2*k, 9, N))
+  VTall_new <- vector(mode = "list", length=N)
   
   for(j in 1:N){
-    VTj <- VTall[[j]]
+    VTj <- VTjcopy <- VTall[[j]]
     #sigma_re <- c(VTj[active, c("x1","x2")])
     #VTsum <-  Z1*c(VTj[active,c("y1","y2")])
-    VTj[2,] <- Z1*VTj[2,]
-    mM <- findSupport(VTj, L[k], U[k]) 
+    
+    VTjcopy[2,] <- Z1*VTj[2,]
+    mM <- findSupport(VTjcopy, L[k], U[k]) 
     # # test 
     # plotPart(VTj, R=c(alow=L[k], aupp=U[k], b=mM[1]) ) #, xlim=c(-1.7,0),ylim=c(-0.23,3))
     # sample z3
@@ -78,40 +79,32 @@ for(k in 3:n){
     x <- atan(mM[1]) # atan(mM[1])/pi+.5
     u <- runif(1, x, y) #runif(1, x, y)
     ZZ <- Z[k,j] <- tan(u)  # tan(pi*(u-.5)) 
-    wt <- weight[k,j] <- (-ZZ^2/2)+log(1+ZZ^2)+log(y-x) # -log(pi) useless constant 
+    wt <- weight[k,j] <- (-ZZ^2/2)+log1p(ZZ^2)+log(y-x) # -log(pi) useless constant 
     # new polygon 
-    
-    
-    
-    
-    D31 <- newD(list(
+    D31 <- c(
       a=L[k],
       b=ZZ,
-      pair=k,
-      type=0)
+      typ=FALSE
     )
-    D32 <- newD(list(
+    D32 <- c(
       a=U[k],
       b=ZZ,
-      pair=k,
-      type=1
-    ))
-    VTj_update <- findVert(VTj, D31)
-    if(all(VTj_update[,"include"]==0)) stop("all inactive1")
-    VTj_update <- VTall_new[,,j] <- findVert(VTj_update, D32)
-    if(all(VTj_update[,"include"]==0)) stop("all inactive2")
+      typ=1
+    )
+    VTj_update <- updatePoly(VTj, D31)
+    VTj_update <- VTall_new[[j]] <- updatePoly(VTj_update, D32)
     # # test 
-    # plot(VTj_update[2,],VTj_update[1,], type="p", col="red", pch=19)
+    # plotPart(VTj, R=c(alow=L[k], aupp=U[k], b=ZZ), xlim=c(-1.7,-1.5),ylim=c(-0.23,-0.1))
+    # plotPart(VTj_update, R=c(alow=L[k], aupp=U[k], b=ZZ), xlim=c(-1.7,-1.5),ylim=c(-0.23,-0.1))
     # abline(a=L[1], b=-Z[1,j])  
     # abline(a=U[1], b=-Z[1,j])  
     # abline(a=L[2], b=-Z[2,j])  
     # abline(a=U[2], b=-Z[2,j])  
     # abline(a=L[3], b=-Z[3,j], col="red")  
     # abline(a=U[3], b=-Z[3,j], col="red")  
-  }
+  } # END for(j in 1:N)
   VTall_prev <- VTall
   VTall <- VTall_new
-  dimnames(VTall)[2] <- dimnames(VTall_prev)[2]
   
   
   WT <- apply(weight,2,cumsum)  #only last re is restricted
@@ -124,52 +117,52 @@ for(k in 3:n){
   
   print(ESS[k])
   
-  ### alteration - uniquement les actifs 
-  if(ESS[k] < .4*N && k<n){
-    Nsons <- rmultinom(1, N, WT)[,1]  
-    Zt <- Z[1:k,]
-    Znew <- array(NA, dim=c(k,N))
-    VTnew <- array(0, dim=c(2*k, 9, N))
-    dimnames(VTnew)[2] <- dimnames(VTall)[2]
-    start <- 0
-    for(j in which(Nsons!=0)){
-      ncopies <- Nsons[j]
-      VTj <- VTall[,,j]
-      active <- VTj[,"include"]==1
-      VTnew[active,,start+1] <- VTj[active,]
-      VTnew[active,c("a","b","pair","type","include"),start+1] <- VTj[active,c("a","b","pair","type","include")]
-      Znew[,start+1] <- Zt[,j]
-      if(ncopies>1){
-        C <- mean(Zt[,j])
-        D <- sqrt(crossprod(Zt[,j]-C)[1,1])
-        tau <- (Zt[,j]-C)/D
-        Ctil <- rnorm(ncopies-1, 0, 1)
-        Dtil <- sqrt(rchisq(ncopies-1, k-1))
-        vt <- t(matrix(t(VTj[active,c("y1","x1","y2","x2")]),ncol=2,byrow=TRUE))
-        # v/sapply ne marche pas avec mpfr
-        for(i in 2:ncopies){ # s'affranchir de cette boucle ?
-          Znew[,start+i] <- Dtil[i-1]*tau + Ctil[i-1] # est-ce utile de calculer Znew ? 
-          vtnew <- array(NA, dim=dim(vt))
-          for(m in 1:ncol(vt)){
-            munew <- vt[1,m] + vt[2,m]*(C-Ctil[i-1]*D/Dtil[i-1])
-            sigmanew <- vt[2,m]*D/Dtil[i-1]
-            vtnew[,m] <- c(munew,sigmanew) 
-          }
-          VTnew[active,c("y1","x1","y2","x2"),start+i] <- matrix(vtnew, ncol=4, byrow=TRUE)
-          VTnew[active,c("a","b","pair","type","include"),start+i] <- VTj[active,c("a","b","pair","type","include")]
-        }
-      }
-      start <- start+ncopies
-    }
-    VTall <- VTnew
-    
-    Z[1:k,] <- Znew
-    
-    #
-    weight  <- array(0, dim=c(n,N))
-  }
+#   ### alteration - uniquement les actifs 
+#   if(ESS[k] < .4*N && k<n){
+#     Nsons <- rmultinom(1, N, WT)[,1]  
+#     Zt <- Z[1:k,]
+#     Znew <- array(NA, dim=c(k,N))
+#     VTnew <- array(0, dim=c(2*k, 9, N))
+#     dimnames(VTnew)[2] <- dimnames(VTall)[2]
+#     start <- 0
+#     for(j in which(Nsons!=0)){
+#       ncopies <- Nsons[j]
+#       VTj <- VTall[,,j]
+#       active <- VTj[,"include"]==1
+#       VTnew[active,,start+1] <- VTj[active,]
+#       VTnew[active,c("a","b","pair","type","include"),start+1] <- VTj[active,c("a","b","pair","type","include")]
+#       Znew[,start+1] <- Zt[,j]
+#       if(ncopies>1){
+#         C <- mean(Zt[,j])
+#         D <- sqrt(crossprod(Zt[,j]-C)[1,1])
+#         tau <- (Zt[,j]-C)/D
+#         Ctil <- rnorm(ncopies-1, 0, 1)
+#         Dtil <- sqrt(rchisq(ncopies-1, k-1))
+#         vt <- t(matrix(t(VTj[active,c("y1","x1","y2","x2")]),ncol=2,byrow=TRUE))
+#         # v/sapply ne marche pas avec mpfr
+#         for(i in 2:ncopies){ # s'affranchir de cette boucle ?
+#           Znew[,start+i] <- Dtil[i-1]*tau + Ctil[i-1] # est-ce utile de calculer Znew ? 
+#           vtnew <- array(NA, dim=dim(vt))
+#           for(m in 1:ncol(vt)){
+#             munew <- vt[1,m] + vt[2,m]*(C-Ctil[i-1]*D/Dtil[i-1])
+#             sigmanew <- vt[2,m]*D/Dtil[i-1]
+#             vtnew[,m] <- c(munew,sigmanew) 
+#           }
+#           VTnew[active,c("y1","x1","y2","x2"),start+i] <- matrix(vtnew, ncol=4, byrow=TRUE)
+#           VTnew[active,c("a","b","pair","type","include"),start+i] <- VTj[active,c("a","b","pair","type","include")]
+#         }
+#       }
+#       start <- start+ncopies
+#     }
+#     VTall <- VTnew
+#     
+#     Z[1:k,] <- Znew
+#     
+#     #
+#     weight  <- array(0, dim=c(n,N))
+#   } # END ALTERATION 
   
-}
+} # END for(k in 3:n)
 
 
 y <- dat[,1]

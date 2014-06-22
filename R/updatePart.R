@@ -28,7 +28,7 @@ updatePoly2 <- function(opoly, D, Dinters, test2){
   if(Dinters[2]-Dinters[1] != 1){
     arrange = c(ncol, 1:(ncol-1))
   }else{
-    arrange = ((1:ncol)+Dinters[1]-2 %% ncol)+1
+    arrange = (((1:ncol)+Dinters[1]-2) %% ncol)+1
   }
   opoly = opoly[, arrange]
   # M
@@ -38,7 +38,7 @@ updatePoly2 <- function(opoly, D, Dinters, test2){
   #
   test = test2[1]
   if( (!D["typ"] && test) || (D["typ"] && !test) ){
-    return(hcat(opoly[,1], M, N, opoly[, 3:ncol]))
+    return(cbind(opoly[,1], M, N, opoly[, 3:ncol]))
   } else{
     return(cbind(M, opoly[,2], N))
   }
@@ -74,10 +74,10 @@ updatePoly  <- function(opoly, D){ #
       print("nothing to do")
       return(opoly)
     }
-  } else if(Remove[1] && Remove[2]){
+  } else if(Remove[1] && Remove[length(Remove)]){
     indices = which(!Remove)
-    torem =  indices[length(indices)]+1 
-    indices = c(indices, torem)
+    torem =  length(indices)+1
+    indices = c(indices, indices[length(indices)]+1)
   } else{
     indices = 1:ncol(opoly)
     indices <- indices[-(toRemove[2]:toRemove[length(toRemove)])]
