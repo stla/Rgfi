@@ -2,7 +2,7 @@ library(Rgfi)
 
 ## fonction qui retourne m et M 
 ## arguments : (VTsum, sigma_re), (L[1:k], U[1:k])  
-findSupport <- findSupport # attention il y a un moins par rapport à la fction précédente (je ne sais plus pourquoi)
+#findSupport <- findSupport # attention il y a un moins par rapport à la fction précédente (je ne sais plus pourquoi)
 
 #library(rgr)
 set.seed(666)
@@ -21,7 +21,7 @@ L <- Y[,1]
 U <- Y[,2] 
 
 Dim <- 2
-N <- nsims <- 5
+N <- nsims <- 2500
 
 
 
@@ -117,50 +117,46 @@ for(k in 3:n){
   
   print(ESS[k])
   
-#   ### alteration - uniquement les actifs 
-#   if(ESS[k] < .4*N && k<n){
-#     Nsons <- rmultinom(1, N, WT)[,1]  
-#     Zt <- Z[1:k,]
-#     Znew <- array(NA, dim=c(k,N))
-#     VTnew <- array(0, dim=c(2*k, 9, N))
-#     dimnames(VTnew)[2] <- dimnames(VTall)[2]
-#     start <- 0
-#     for(j in which(Nsons!=0)){
-#       ncopies <- Nsons[j]
-#       VTj <- VTall[,,j]
-#       active <- VTj[,"include"]==1
-#       VTnew[active,,start+1] <- VTj[active,]
-#       VTnew[active,c("a","b","pair","type","include"),start+1] <- VTj[active,c("a","b","pair","type","include")]
-#       Znew[,start+1] <- Zt[,j]
-#       if(ncopies>1){
-#         C <- mean(Zt[,j])
-#         D <- sqrt(crossprod(Zt[,j]-C)[1,1])
-#         tau <- (Zt[,j]-C)/D
-#         Ctil <- rnorm(ncopies-1, 0, 1)
-#         Dtil <- sqrt(rchisq(ncopies-1, k-1))
-#         vt <- t(matrix(t(VTj[active,c("y1","x1","y2","x2")]),ncol=2,byrow=TRUE))
-#         # v/sapply ne marche pas avec mpfr
-#         for(i in 2:ncopies){ # s'affranchir de cette boucle ?
-#           Znew[,start+i] <- Dtil[i-1]*tau + Ctil[i-1] # est-ce utile de calculer Znew ? 
-#           vtnew <- array(NA, dim=dim(vt))
-#           for(m in 1:ncol(vt)){
-#             munew <- vt[1,m] + vt[2,m]*(C-Ctil[i-1]*D/Dtil[i-1])
-#             sigmanew <- vt[2,m]*D/Dtil[i-1]
-#             vtnew[,m] <- c(munew,sigmanew) 
-#           }
-#           VTnew[active,c("y1","x1","y2","x2"),start+i] <- matrix(vtnew, ncol=4, byrow=TRUE)
-#           VTnew[active,c("a","b","pair","type","include"),start+i] <- VTj[active,c("a","b","pair","type","include")]
-#         }
-#       }
-#       start <- start+ncopies
-#     }
-#     VTall <- VTnew
-#     
-#     Z[1:k,] <- Znew
-#     
-#     #
-#     weight  <- array(0, dim=c(n,N))
-#   } # END ALTERATION 
+  ### alteration - uniquement le actifs 
+  if(ESS[k] < .4*N && k<n){
+    Nsons <- rmultinom(1, N, WT)[,1]  
+    Zt <- Z[1:k,]
+    Znew <- array(NA, dim=c(k,N))
+    VTnew <- vector(mode = "list", length=N)
+    start <- 0
+    for(j in which(Nsons!=0)){
+      ncopies <- Nsons[j]
+      VTj <- VTall[[j]]
+      VTnew[[start+1]] <- VTj
+      Znew[,start+1] <- Zt[,j]
+      if(ncopies>1){
+        C <- mean(Zt[,j])
+        D <- sqrt(crossprod(Zt[,j]-C)[1,1])
+        tau <- (Zt[,j]-C)/D
+        Ctil <- rnorm(ncopies-1, 0, 1)
+        Dtil <- sqrt(rchisq(ncopies-1, k-1))
+        vt <- VTj[2:1,]
+        # v/sapply ne marche pas avec mpfr
+        for(i in 2:ncopies){ # s'affranchir de cette boucle ?
+          Znew[,start+i] <- Dtil[i-1]*tau + Ctil[i-1] # est-ce utile de calculer Znew ? 
+          vtnew <- array(NA, dim=dim(vt))
+          for(m in 1:ncol(vt)){
+            munew <- vt[1,m] + vt[2,m]*(C-Ctil[i-1]*D/Dtil[i-1])
+            sigmanew <- vt[2,m]*D/Dtil[i-1]
+            vtnew[,m] <- c(munew,sigmanew) 
+          }
+          VTnew[[start+i]] <- vtnew
+        }
+      }
+      start <- start+ncopies
+    }
+    VTall <- VTnew
+    
+    Z[1:k,] <- Znew
+    
+    #
+    weight  <- array(0, dim=c(n,N))
+  } # END ALTERATION 
   
 } # END for(k in 3:n)
 
@@ -171,10 +167,8 @@ print(confint(lm(y~1)))
 # ewcdf <- spatstat::ewcdf
 
 mu <- sapply(1:N, function(j){
-  vt <- VTall[,,j]
-  vt[vt[,"include"]==1,][1,"y1"]
-}
-)
+  VTall[[j]][2,1]
+})
 sims <- sample(mu, N, prob=WT, replace=TRUE)
 summary(sims)
 print(quantile(sims,c(2.5,97.5)/100))
