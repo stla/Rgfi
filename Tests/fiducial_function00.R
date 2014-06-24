@@ -124,6 +124,8 @@ for(k in 3:n){
     Znew <- array(NA, dim=c(k,N))
     VTnew <- vector(mode = "list", length=N)
     start <- 0
+    # faire fonction alterate(VTall, Zt)
+    # avec sous-fonction alterate(Vtj, ncopies-1)
     for(j in which(Nsons!=0)){
       ncopies <- Nsons[j]
       VTj <- VTall[[j]]
