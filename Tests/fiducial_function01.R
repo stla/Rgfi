@@ -132,28 +132,13 @@ for(k in 3:n){
       VTnew[[start+1]] <- VTj
       Znew[,start+1] <- Zt[,j]
       if(ncopies>1){
-        C <- mean(Zt[,j])
-        D <- sqrt(crossprod(Zt[,j]-C)[1,1])
-        tau <- (Zt[,j]-C)/D
-        Ctil <- rnorm(ncopies-1, 0, 1)
-        Dtil <- sqrt(rchisq(ncopies-1, k-1))
-        vt <- VTj[2:1,]
-        # v/sapply ne marche pas avec mpfr
-        for(i in 2:ncopies){ # s'affranchir de cette boucle ?
-          Znew[,start+i] <- Dtil[i-1]*tau + Ctil[i-1] # est-ce utile de calculer Znew ? - oui pour les altérations futures je pense
-          vtnew <- array(NA, dim=dim(vt))
-          for(m in 1:ncol(vt)){
-            munew <- vt[1,m] + vt[2,m]*(C-Ctil[i-1]*D/Dtil[i-1])
-            sigmanew <- vt[2,m]*D/Dtil[i-1]
-            vtnew[,m] <- c(munew,sigmanew) 
-          }
-          VTnew[[start+i]] <- vtnew
-        }
+        alt <- alterate(ncopies-1, VTj, mean(Zt[,j]), k-1) # c'est pas plutôt Zt[k,j] ?
+        Znew[,(start+2):(start+ncopies)] <- alt$Znew
+        VTnew[(start+2):(start+ncopies)] <- alt$VTnew
       }
       start <- start+ncopies
     }
     VTall <- VTnew
-    
     Z[1:k,] <- Znew
     
     #
@@ -162,21 +147,63 @@ for(k in 3:n){
   
 } # END for(k in 3:n)
 
+#----------------------------------------------------determine signs
+re <- 1
+signs=matrix(0, nrow=re, ncol=N)    #  
+for(i in 1:N){
+  for(j in 1:re){
+    if(all(VTall[[i]][1,]>0)){ #i.e. all are positive
+      signs[j,i] <- 1
+    }
+    else if(all(VTall[[i]][1,]<0)){ #i.e. all are negative
+      signs[j,i] <- -1 
+    }
+  }
+}
+
+#----------------------------------------------------FINAL RESAMPLE  		
+for(j in 1:N){
+    alt <- alterate(1, VTall[[j]], as.matrix(Z[n,j]), n-1)
+    VTall[j] <- alt$VTnew
+}
+
+
+#----------------------------------------------------flip negatives  	
+for(i in 1:N){
+  for(j in 1:re){ #only look at random effects
+    if(signs[j,i]==-1){
+      VTall[[i]][1,] <- -VTall[[i]][1,]  #only need to flip the negatives         
+    }
+  }
+} 
+#----------------------------------------------------pick coordinates
+Dim <- 2
+VT_end <- matrix(0, nrow=Dim, ncol=N) 
+for(i in 1:N){
+  #for(j in 1:Dim){
+    if(runif(1)<=0.5){
+      #if(j<=fe){
+        VT_end[2,i] <- min(VTall[[i]][2,])
+      #}else{
+        VT_end[1,i] <- max(min(VTall[[i]][1,]),0) 
+      #}
+    }else{
+      #if(j<=fe){
+      VT_end[2,i] <- max(VTall[[i]][2,])
+      #}else{
+      VT_end[1,i] <- max(max(VTall[[i]][1,]),0) 
+      #}
+    }
+  }
+
+VERTEX <- VT_end 
+WEIGHT <- WT 
+
+
 
 y <- dat[,1]
 print(confint(lm(y~1)))
 
-# ewcdf <- spatstat::ewcdf
-
-mu <- sapply(1:N, function(j){
-  VTall[[j]][2,1]
-})
-sims <- sample(mu, N, prob=WT, replace=TRUE)
-summary(sims)
-print(quantile(sims,c(2.5,97.5)/100))
-plot(density(mu, weights=WT))
-
-
-
-inference(mu,WT)
+print(inference(VERTEX[2,],WT))
+print(inference(VERTEX[1,],WT))
 

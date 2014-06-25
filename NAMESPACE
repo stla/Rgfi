@@ -2,8 +2,10 @@
 
 export(Dlow)
 export(Dupp)
+export(alterate)
 export(edge2ab)
 export(findSupport)
+export(inference)
 export(intersect)
 export(ipart)
 export(orderPart)
