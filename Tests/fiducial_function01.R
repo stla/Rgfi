@@ -10,8 +10,8 @@ set.seed(666)
 
 dat <- rbind(c(1.624 ,1.625), c(2.209,2.210), c(2.097,2.098), c(0.558,0.559), c(-0.335,-0.334), c(-0.971,-0.970), c(-1.650,-1.649), c(-2.338,-2.337), c(-3.290,-3.289), c(-4.291,-4.290), c(2.862 ,2.863), c(2.023,2.024), c(-2.336,-2.335), c(-0.613,-0.612), c(-0.907,-0.906), c(0.354,0.355))
 
-y <- seq(1,20, by=2) #sort(round(rnorm(n),3))
-dat <- cbind(y,y+0.05)
+#y <- seq(1,20, by=2) #sort(round(rnorm(n),3))
+#dat <- cbind(y,y+0.05)
 
 n <- nrow(dat)
 X <- FE <-  t(t(rep(1,n)))
@@ -21,7 +21,7 @@ L <- Y[,1]
 U <- Y[,2] 
 
 Dim <- 2
-N <- nsims <- 2500
+N <- nsims <- 4000
 
 
 
@@ -118,7 +118,7 @@ for(k in 3:n){
   print(ESS[k])
   
   ### alteration - uniquement le actifs 
-  if(ESS[k] < .4*N && k<n){
+  if(ESS[k] < .5*N && k<n){
     Nsons <- rmultinom(1, N, WT)[,1]  
     Zt <- Z[1:k,]
     Znew <- array(NA, dim=c(k,N))
@@ -132,9 +132,10 @@ for(k in 3:n){
       VTnew[[start+1]] <- VTj
       Znew[,start+1] <- Zt[,j]
       if(ncopies>1){
-        alt <- alterate(ncopies-1, VTj, mean(Zt[,j]), k-1) # c'est pas plutôt Zt[k,j] ?
+        alt <- alterate(ncopies-1, VTj, Zt[,j], k-1) 
         Znew[,(start+2):(start+ncopies)] <- alt$Znew
         VTnew[(start+2):(start+ncopies)] <- alt$VTnew
+        #print("o")
       }
       start <- start+ncopies
     }
@@ -162,9 +163,9 @@ for(i in 1:N){
 }
 
 #----------------------------------------------------FINAL RESAMPLE  		
-for(j in 1:N){
-    alt <- alterate(1, VTall[[j]], as.matrix(Z[n,j]), n-1)
-    VTall[j] <- alt$VTnew
+ for(j in 1:N){
+     alt <- alterate(1, VTall[[j]], Z[,j], n-1)
+     VTall[j] <- alt$VTnew
 }
 
 
@@ -206,4 +207,8 @@ print(confint(lm(y~1)))
 
 print(inference(VERTEX[2,],WT))
 print(inference(VERTEX[1,],WT))
+
+plot(density(VERTEX[2,], weights=WT))
+plot(density(VERTEX[1,], weights=WT))
+curve((n-1)/1.77*dchisq((n-1)*x/1.77, n-1), add=TRUE, col="red") #c'est sigma² ça...
 

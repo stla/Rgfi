@@ -19,7 +19,7 @@ alterate <- function(ncopies, vt, Ztj, df){ # vt=opoly ; attention ncopies=ncopi
       sigmanew <- vt[2,m]*D/Dtil[i]
       vtnew[,m] <- c(munew,sigmanew) 
     }
-    VTnew[[i]] <- vtnew
+    VTnew[[i]] <- vtnew[2:1,]
   }
   return(list(Znew=Znew, VTnew=VTnew))
 }
