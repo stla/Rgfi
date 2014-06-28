@@ -3,7 +3,7 @@
 \alias{alterate}
 \title{Alteration}
 \usage{
-alterate(ncopies, vt, Zt)
+alterate(ncopies, vt, Ztj, df)
 }
 \description{
 Alteration

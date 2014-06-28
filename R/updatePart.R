@@ -22,7 +22,7 @@ updatePoly1 <- function(opoly, D, toRemove){
 #' @export
 
 # case "chanfrein"
-updatePoly2 <- function(opoly, D, Dinters, test2){
+updatePoly2 <- function(opoly, D, Dinters, test1){
   # shift to put the two edges at first positions
   ncol = ncol(opoly)
   if(Dinters[2]-Dinters[1] != 1){
@@ -36,8 +36,8 @@ updatePoly2 <- function(opoly, D, Dinters, test2){
   # N
   N = intersect(c(D["a"],D["b"]), edge2ab(opoly,2))
   #
-  test = test2[1]
-  if( (!D["typ"] && test) || (D["typ"] && !test) ){
+  test = test1[arrange][2] # test2[1]
+  if( (!D["typ"] && !test) || (D["typ"] && test) ){
     return(cbind(opoly[,1], M, N, opoly[, 3:ncol]))
   } else{
     return(cbind(M, opoly[,2], N))
@@ -54,7 +54,7 @@ updatePoly  <- function(opoly, D){ #
   x2 = x1[c(2:length(x1), 1)]
   y2 = y1[c(2:length(x1), 1)]
   test1 = y1 > (D["a"] + D["b"] * x1)
-  test2 = y2 > (D["a"] + D["b"] * x2)
+  test2 = y2 > (D["a"] + D["b"] * x2) # c'est simplement test1 shifté
   test = test1 + test2
   if(D["typ"]==FALSE){
     Remove <- test == 0
@@ -69,7 +69,7 @@ updatePoly  <- function(opoly, D){ #
     Dinters = which(test == 1)
     if(length(Dinters) == 2){
       print("case 2\n")
-      return(updatePoly2(opoly, D, Dinters, test2))
+      return(updatePoly2(opoly, D, Dinters, test1))
     } else{
       print("nothing to do")
       return(opoly)

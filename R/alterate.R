@@ -8,7 +8,7 @@ alterate <- function(ncopies, vt, Ztj, df){ # vt=opoly ; attention ncopies=ncopi
   C <- mean(Ztj)
   D <- sqrt(crossprod(Ztj-C)[1,1])
   tau <- (Ztj-C)/D 
-  Ctil <- rnorm(ncopies, 0, 1)
+  Ctil <- rnorm(ncopies, 0, 1/sqrt(df+1))
   Dtil <- sqrt(rchisq(ncopies, df))
   Znew <- array(NA, dim=c(length(Ztj), ncopies))
   for(i in 1:ncopies){ 

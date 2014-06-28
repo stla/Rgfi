@@ -9,6 +9,7 @@ findSupport <- function(poly, l, u){
   if((min(sigma) > 0) || (max(sigma)<0)){ # 1er cas : la cellule ne contient pas sigma=0 (tous les sigma de m?me signe)
     return(range(-c((l-VTsum)/sigma, (u-VTsum)/sigma)))
   }else{ # 2?me cas : l'axe des VTsum coupe la cellule 
+    print("********************************")
     where <- c(isInside(poly, l), isInside(poly, u))
     #cas 2a : un nouveau point (l ou u) ? l'int?rieur
     if(where[1]=="inside" || where[2]=="inside"){ 

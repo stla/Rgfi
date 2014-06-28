@@ -10,8 +10,10 @@ set.seed(666)
 
 dat <- rbind(c(1.624 ,1.625), c(2.209,2.210), c(2.097,2.098), c(0.558,0.559), c(-0.335,-0.334), c(-0.971,-0.970), c(-1.650,-1.649), c(-2.338,-2.337), c(-3.290,-3.289), c(-4.291,-4.290), c(2.862 ,2.863), c(2.023,2.024), c(-2.336,-2.335), c(-0.613,-0.612), c(-0.907,-0.906), c(0.354,0.355))
 
-#y <- seq(1,20, by=2) #sort(round(rnorm(n),3))
-#dat <- cbind(y,y+0.05)
+# y <- seq(1,20, by=2) #sort(round(rnorm(n),3))
+# dat <- cbind(y,y+0.05)
+
+
 
 n <- nrow(dat)
 X <- FE <-  t(t(rep(1,n)))
@@ -21,7 +23,7 @@ L <- Y[,1]
 U <- Y[,2] 
 
 Dim <- 2
-N <- nsims <- 4000
+N <- nsims <- 2000
 
 
 
@@ -46,8 +48,8 @@ h <- function(M){
   #   a1 <- AA[c(K_start,K_start+n),]
   #   b1 <- b[c(K_start,K_start+n)]
   #   makeH(a1,b1)  
-  R1 <- c(alow=L[K_start[1]], aupp=U[K_start[1]], b=M[K_start[1],1])
-  R2 <- c(alow=L[K_start[2]], aupp=U[K_start[2]], b=M[K_start[2],1])
+  R1 <- c(alow=L[K_start[1]], aupp=U[K_start[1]], b=-M[K_start[1],1])
+  R2 <- c(alow=L[K_start[2]], aupp=U[K_start[2]], b=-M[K_start[2],1])
 return(ipart(R1,R2))
 }
 
@@ -79,7 +81,7 @@ for(k in 3:n){
     x <- atan(mM[1]) # atan(mM[1])/pi+.5
     u <- runif(1, x, y) #runif(1, x, y)
     ZZ <- Z[k,j] <- tan(u)  # tan(pi*(u-.5)) 
-    wt <- weight[k,j] <- (-ZZ^2/2)+log1p(ZZ^2)+log(y-x) # -log(pi) useless constant 
+    wt <- weight[k,j] <- (-ZZ^2/2)+log(1+ZZ^2)+log(y-x) # -log(pi) useless constant 
     # new polygon 
     D31 <- c(
       a=L[k],
@@ -91,6 +93,7 @@ for(k in 3:n){
       b=ZZ,
       typ=1
     )
+    Z[k,j] <- -ZZ
     VTj_update <- updatePoly(VTj, D31)
     VTj_update <- VTall_new[[j]] <- updatePoly(VTj_update, D32)
     # # test 
@@ -105,7 +108,11 @@ for(k in 3:n){
   } # END for(j in 1:N)
   VTall_prev <- VTall
   VTall <- VTall_new
-  
+  # # test 
+  # j <- 1
+  # plotPart(VTall_prev[[j]], R=c(alow=L[k], aupp=U[k], b=Z[k,j])); plotPart(VTall[[j]], add=TRUE, col.edge="blue"); axis(1)
+  # plotPart(VTall[[j]], add=TRUE, col.edge="blue")
+  # abline(a=L[k], b=Z[k,j])  
   
   WT <- apply(weight,2,cumsum)  #only last re is restricted
   WT <- WT[nrow(WT),]
@@ -119,7 +126,20 @@ for(k in 3:n){
   
   ### alteration - uniquement le actifs 
   if(ESS[k] < .5*N && k<n){
-    Nsons <- rmultinom(1, N, WT)[,1]  
+    Nsons <- rmultinom(1, N, WT)[,1]
+#     Nsons <- rep(0,N)  
+#     # generate the cumulative distribution
+#     dist <- cumsum(WT) 
+#     aux <- runif(1)    # sample uniform rv in [0 1]
+#     u <- aux+c(0:(N-1)) 
+#     u <- u/N 
+#     j <- 1 
+#     for(i in 1:N){
+#       while(u[i]>dist[j]){ # qu'est-ce ?
+#         j <- j+1 
+#       }
+#       Nsons[j] <- Nsons[j]+1 
+#     }
     Zt <- Z[1:k,]
     Znew <- array(NA, dim=c(k,N))
     VTnew <- vector(mode = "list", length=N)
@@ -137,6 +157,9 @@ for(k in 3:n){
         VTnew[(start+2):(start+ncopies)] <- alt$VTnew
         #print("o")
       }
+      # plotPart(VTj, xlim=c(0,max(VTj[1,])), ylim=c(min(L[1:k]),max(U[1:k])), lines=TRUE)
+      # plotPart(VTnew[[2]], add=TRUE, lines=TRUE)
+      #abline(a=L[1], b=Znew[1,2])
       start <- start+ncopies
     }
     VTall <- VTnew
@@ -209,6 +232,8 @@ print(inference(VERTEX[2,],WT))
 print(inference(VERTEX[1,],WT))
 
 plot(density(VERTEX[2,], weights=WT))
-plot(density(VERTEX[1,], weights=WT))
-curve((n-1)/1.77*dchisq((n-1)*x/1.77, n-1), add=TRUE, col="red") #c'est sigma² ça...
+plot(density(VERTEX[1,]^2, weights=WT))
+a <- n/2
+b <- crossprod(y-mean(y))/2
+curve(1/x^2*dgamma(1/x, a, b), add=TRUE, col="red") #c'est sigma² 
 
