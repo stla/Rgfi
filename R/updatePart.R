@@ -51,10 +51,10 @@ updatePoly2 <- function(opoly, D, Dinters, test1){
 updatePoly  <- function(opoly, D){ #
   x1 = opoly[1,]
   y1 = opoly[2,]
-  x2 = x1[c(2:length(x1), 1)]
-  y2 = y1[c(2:length(x1), 1)]
+  #x2 = x1[c(2:length(x1), 1)]
+  #y2 = y1[c(2:length(x1), 1)]
   test1 = y1 > (D["a"] + D["b"] * x1)
-  test2 = y2 > (D["a"] + D["b"] * x2) # c'est simplement test1 shifté
+  test2 = test1[c(2:length(x1), 1)] #y2 > (D["a"] + D["b"] * x2) # c'est simplement test1 shifté
   test = test1 + test2
   if(D["typ"]==FALSE){
     Remove <- test == 0

@@ -1,3 +1,7 @@
+#' Plot particle
+#' 
+#' @export
+
 plotPart <- function(part, D=NULL, R=NULL, xlim=NULL, ylim=NULL, add=FALSE, edges=TRUE, col.edge="red", vertices=TRUE, lines=FALSE, col.line="black", lty.line="dashed", ...){
   part <- orderPart(part)
   x <- part[1, c(1:ncol(part),1)]
