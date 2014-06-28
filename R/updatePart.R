@@ -63,15 +63,15 @@ updatePoly  <- function(opoly, D){ #
   }
   toRemove = which(Remove)
   if(length(toRemove) == 1){
-    print("case 1\n")
+    #print("case 1\n")
     return(updatePoly1(opoly, D, toRemove[1]))
   } else if(length(toRemove) == 0){
     Dinters = which(test == 1)
     if(length(Dinters) == 2){
-      print("case 2\n")
+      #print("case 2\n")
       return(updatePoly2(opoly, D, Dinters, test1))
     } else{
-      print("nothing to do")
+      #print("nothing to do")
       return(opoly)
     }
   } else if(Remove[1] && Remove[length(Remove)]){
@@ -83,6 +83,6 @@ updatePoly  <- function(opoly, D){ #
     indices <- indices[-(toRemove[2]:toRemove[length(toRemove)])]
     torem = toRemove[1]
   }
-  print("case 3\n")
+  #print("case 3\n")
   updatePoly1(opoly[,indices], D, torem)
 }

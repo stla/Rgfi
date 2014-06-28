@@ -3,7 +3,7 @@
 \alias{updatePoly2}
 \title{Find intersection - case 2}
 \usage{
-updatePoly2(opoly, D, Dinters, test2)
+updatePoly2(opoly, D, Dinters, test1)
 }
 \description{
 Find intersection - case 2
