@@ -3,7 +3,7 @@
 #' @export
 
 alterate <- function(ncopies, vt, Ztj, df){ # vt=opoly ; attention ncopies=ncopies-1 dans le resample
-  VTnew <- vector(mode="list", length=ncopies)
+  VTnew <- vector(mode="list", length=ncopies) # could use an array instead
   vt <- vt[2:1,]
   C <- mean(Ztj)
   D <- sqrt(crossprod(Ztj-C)[1,1])

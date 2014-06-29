@@ -84,5 +84,5 @@ updatePoly  <- function(opoly, D){ #
     torem = toRemove[1]
   }
   #print("case 3\n")
-  updatePoly1(opoly[,indices], D, torem)
+  return(updatePoly1(opoly[,indices], D, torem))
 }
