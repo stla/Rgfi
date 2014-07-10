@@ -19,7 +19,7 @@
 
 
 fid_basic <- function(ylow, yupp, N, R=0.5){
-  dat <- cbind(y,yupp)
+  dat <- cbind(ylow,yupp)
   n <- nrow(dat)
   X <- FE <-  t(t(rep(1,n)))
   V <- diag(n)
