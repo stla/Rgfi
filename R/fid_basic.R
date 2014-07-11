@@ -45,14 +45,14 @@ fid_basic <- function(ylow, yupp, N, R=0.5){
   for(k in 3:n){
     Z1 <- FE[k,]
     VTall_new <- vector(mode = "list", length=N)
-    U <- runif(N)
+    UU <- runif(N)
     for(j in 1:N){
       VTj <- VTjcopy <- VTall[[j]]
       VTjcopy[2,] <- Z1*VTj[2,]
       mM <- findSupport(VTjcopy, L[k], U[k]) 
       y <- atan(mM[2]) 
       x <- atan(mM[1]) 
-      u <- x+(y-x)*U[j]  #runif(1, x, y) 
+      u <- x+(y-x)*UU[j]  #runif(1, x, y) 
       ZZ <- Z[k,j] <- tan(u)  
       wt <- weight[k,j] <- (-ZZ^2/2)+log(1+ZZ^2)+log(y-x) 
       # new polygon 
