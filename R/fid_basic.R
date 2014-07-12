@@ -1,4 +1,5 @@
 
+
 #' Fiducial sample for the basic Gaussian model
 #' 
 #' @param ylow vector of lower bounds of observations
@@ -9,9 +10,11 @@
 #' @examples
 #' y <- c(1.624, 2.209, 2.097, 0.558, -0.335, -0.971, -1.65, -2.338, -3.29, -4.291, 2.862, 2.023, -2.336, -0.613, -0.907, 0.354)
 #' sims <- fid_basic(y, y+0.001, 1000)
-#' VERTEX <- sims$VERTEX; WT <- sims$WT
+#' VERTEX <- sims$VERTEX; WT <- sims$WEIGHT
 #' plot(density(VERTEX$mu, weights=WT))
 #' curve(dnorm(x,mean(y),sd(y)/sqrt(length(y))), add=TRUE)
+#' inference(VERTEX$mu, WT)
+#' confint(lm(y~1))
 #' plot(density(VERTEX$sigma^2, weights=WT))
 #' curve(1/x^2*dgamma(1/x, length(y)/2, crossprod(y-mean(y))/2), add=TRUE, col="red")  
 #' 
@@ -49,11 +52,14 @@ fid_basic <- function(ylow, yupp, N, R=0.5){
     for(j in 1:N){
       VTj <- VTjcopy <- VTall[[j]]
       VTjcopy[2,] <- Z1*VTj[2,]
+      #
+      #sampleNext(VTjcopy, VTj, L[k], U[k], UU[j])
+      #
       mM <- findSupport(VTjcopy, L[k], U[k]) 
       y <- atan(mM[2]) 
       x <- atan(mM[1]) 
       u <- x+(y-x)*UU[j]  #runif(1, x, y) 
-      ZZ <- Z[k,j] <- tan(u)  
+      ZZ <- tan(u)  
       wt <- weight[k,j] <- (-ZZ^2/2)+log(1+ZZ^2)+log(y-x) 
       # new polygon 
       D31 <- c(
@@ -66,9 +72,9 @@ fid_basic <- function(ylow, yupp, N, R=0.5){
         b=ZZ,
         typ=1
       )
-      Z[k,j] <- -ZZ
       VTj_update <- updatePoly(VTj, D31)
       VTj_update <- VTall_new[[j]] <- updatePoly(VTj_update, D32)
+      Z[k,j] <- -ZZ
     } # END for(j in 1:N)
     VTall <- VTall_new
     

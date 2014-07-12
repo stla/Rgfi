@@ -20,9 +20,11 @@ Fiducial sample for the basic Gaussian model
 \examples{
 y <- c(1.624, 2.209, 2.097, 0.558, -0.335, -0.971, -1.65, -2.338, -3.29, -4.291, 2.862, 2.023, -2.336, -0.613, -0.907, 0.354)
 sims <- fid_basic(y, y+0.001, 1000)
-VERTEX <- sims$VERTEX; WT <- sims$WT
+VERTEX <- sims$VERTEX; WT <- sims$WEIGHT
 plot(density(VERTEX$mu, weights=WT))
 curve(dnorm(x,mean(y),sd(y)/sqrt(length(y))), add=TRUE)
+inference(VERTEX$mu, WT)
+confint(lm(y~1))
 plot(density(VERTEX$sigma^2, weights=WT))
 curve(1/x^2*dgamma(1/x, length(y)/2, crossprod(y-mean(y))/2), add=TRUE, col="red")
 }
