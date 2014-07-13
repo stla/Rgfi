@@ -1,0 +1,71 @@
+---
+title: "Comparisons Rgfi Jgfi"
+author: "Stéphane Laurent"
+date: "28/06/2014"
+output: html_document
+---
+
+```{r setup}
+julia <- "/home/stla/ProgramFiles/julia"
+PATH <- Sys.getenv()["PATH"]
+if(!stringr::str_detect(PATH, "julia")) Sys.setenv(PATH=paste0(PATH,":",julia))
+library(runr)
+library(knitr)
+j = proc_julia(4321) 
+j$start() 
+knit_engines$set(julia = function(options) { 
+  knitr:::wrap(j$exec(options$code), options) 
+}) 
+```
+
+```{r tt, results='asis'}
+cat(j$exec('"a\n j"')[[2]])
+```
+
+
+
+
+Test a function: 
+
+```{r test-b, engine='julia'} 
+cd("/home/stla/Github/JULIAGFI01/assets/Julia/")
+for file = ("Line",)
+    include(*(pwd(), "/type_", file, ".jl"))
+end
+for file = ("DlowDupp", "intersect", "findRange", "getLine", "orderPart", "updatePoly")
+    include(*(pwd(), "/function_", file, ".jl"))
+end
+``` 
+
+
+```{r test-c, engine='julia', results='hide'} 
+R1 = Ribbon(0.4, 1.5, BigFloat("1.5"));
+R1 = Ribbon(0.4, 1.5, BigFloat("1.5"));
+D1_low = Dlow(R1);
+D1_upp = Dupp(R1);
+R2 = Ribbon(4.5, 5.9, BigFloat("-2"));
+D2_low = Dlow(R2);
+D2_upp = Dupp(R2);
+A = intersect((D1_low.a, D1_low.b), (D2_low.a, D2_low.b));
+B = intersect((D1_low.a, D1_low.b), (D2_upp.a, D2_upp.b));
+C = intersect((D1_upp.a, D1_upp.b), (D2_low.a, D2_low.b));
+D = intersect((D1_upp.a, D1_upp.b), (D2_upp.a, D2_upp.b));
+poly0 = poly = orderPart(hcat(A,B,C,D));
+``` 
+
+```{r test-d, engine='julia', collapse=TRUE} 
+println(float64(poly))
+``` 
+
+```{r test-e, engine='julia', collapse=TRUE} 
+"a+b"
+``` 
+
+Do not forget to shut it down in the end. 
+
+```{r quit} 
+j$stop() 
+``` 
+
+
+

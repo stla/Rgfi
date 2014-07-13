@@ -1,0 +1,131 @@
+---
+title: "Comparisons Rgfi Jgfi"
+author: "Stéphane Laurent"
+date: "28/06/2014"
+output: html_document
+---
+
+
+ We will fit the basic Gaussian model with these observations ($n=16$):
+
+```{r dat1, message=FALSE}
+y <- c(1.624, 2.209, 2.097, 0.558, -0.335, -0.971, -1.65, -2.338, -3.29, -4.291, 2.862, 2.023, -2.336, -0.613, -0.907, 0.354)
+ylow <- y; yupp <- y+0.001
+# classical confidence interval:
+confint(lm(y~1))
+```
+
+### Rgfi
+
+Below are the time elapsed in R, using $1000$, $5000$ and $10000$ simulations at 
+each step of the GFI algorithm:
+
+```{r rgfi1, message=FALSE}
+library(Rgfi)
+system.time( sims <- fid_basic(ylow, yupp, N=1000, R=0.5) )
+inference(sims$VERTEX$mu, sims$WEIGHT)
+system.time( sims <- fid_basic(ylow, yupp, N=5000, R=0.5) )
+inference(sims$VERTEX$mu, sims$WEIGHT)
+system.time( sims <- fid_basic(ylow, yupp, N=10000, R=0.5) )
+inference(sims$VERTEX$mu, sims$WEIGHT)
+```
+
+
+
+### Jgfi 
+
+We save the data:
+
+```{r save_dat1}
+dat <- data.frame(ylow=y, yupp=y+0.001)
+save(dat, file="/home/stla/Github/JULIAGFI01/assets/Julia/module/rdata.rda")
+```
+
+and we import the data in Julia:
+
+```
+import DataFrames: read_rda, DataFrame
+cd("/home/stla/Github/JULIAGFI01/assets/Julia/module/")
+dat = DataFrame(read_rda("rdata.rda")["dat"]);
+ylow = dat[:ylow];
+yupp = dat[:yupp];
+```
+
+#### Jgfi `Float64`
+
+Below are the system times using the `Float64` implementation. 
+
+```
+include(*(pwd(), "/Jgfi_Float64.jl"))
+```
+
+```
+julia> @time (VERTEX,WEIGHT) = fid_basic(ylow, yupp, 1000, 0.5);
+elapsed time: 1.134478898 seconds (486798920 bytes allocated, 21.97% gc time)
+
+julia> inference(VERTEX[2,:], WEIGHT, 0.05);
+mean: -0.28131319561958834
+median: -0.2860372106603346
+lower bound: -1.4183992863503838
+upper bound: 0.7916730890084596
+
+julia> @time (VERTEX,WEIGHT) = fid_basic(ylow, yupp, 5000, 0.5);
+elapsed time: 5.724344226 seconds (2434032088 bytes allocated, 23.55% gc time)
+
+julia> inference(VERTEX[2,:], WEIGHT, 0.05);
+mean: -0.2999198819589437
+median: -0.30273312852805134
+lower bound: -1.4071606397569898
+upper bound: 0.8636885309030613
+
+julia> @time (VERTEX,WEIGHT) = fid_basic(ylow, yupp, 10000, 0.5);
+elapsed time: 11.581790719 seconds (4864596264 bytes allocated, 24.23% gc time)
+
+julia> inference(VERTEX[2,:], WEIGHT, 0.05);
+mean: -0.30482210283556155
+median: -0.30321939639794915
+lower bound: -1.3980445993469064
+upper bound: 0.8276515454271043
+```
+
+#### Jgfi `BigFloat`
+
+Below are the system times using the `BigFloat` implementation. 
+
+```
+include(*(pwd(), "/Jgfi.jl"))
+```
+
+```
+julia> @time (VERTEX,WEIGHT) = fid_basic(ylow, yupp, 1000, 0.5);
+elapsed time: 5.71569161 seconds (848744728 bytes allocated, 28.50% gc time)
+
+julia> inference(VERTEX[2,:], WEIGHT, 0.05);
+mean: -0.2802284859731472
+median: -0.2727818758625046
+lower bound: -1.3735353848656193
+upper bound: 0.8705640543955954
+
+julia> @time (VERTEX,WEIGHT) = fid_basic(ylow, yupp, 5000, 0.5);
+elapsed time: 29.170082726 seconds (4236747312 bytes allocated, 28.15% gc time)
+
+julia> inference(VERTEX[2,:], WEIGHT, 0.05);
+mean: -0.3186354820243395
+median: -0.3199450052824435
+lower bound: -1.4817610937198107
+upper bound: 0.8411349410263625
+
+julia> @time (VERTEX,WEIGHT) = fid_basic(ylow, yupp, 10000, 0.5);
+elapsed time: 64.920877479 seconds (8475386648 bytes allocated, 34.42% gc time)
+
+julia> inference(VERTEX[2,:], WEIGHT, 0.05);
+mean: -0.3188158421016859
+median: -0.31961527002450585
+lower bound: -1.4520745367825794
+upper bound: 0.82937881452444
+```
+
+
+
+
+
